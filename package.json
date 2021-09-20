@@ -1,0 +1,36 @@
+{
+  "name": "yal2vpn",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Yet Another Layer 2 VPN",
+  "main": "lib/index.js",
+  "bin": {
+    "archibald": "lib/cli.js"
+  },
+  "scripts": {
+    "test": "c8 --reporter lcov --reporter html --reporter text mocha",
+    "eslint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k13-engineering/yal2vpn.git"
+  },
+  "keywords": [],
+  "author": "Simon Kadisch",
+  "license": "LGPL 2.1",
+  "bugs": {
+    "url": "https://github.com/k13-engineering/yal2vpn/issues"
+  },
+  "homepage": "https://github.com/k13-engineering/yal2vpn#readme",
+  "dependencies": {
+    "ws": "^7.4.1",
+    "yargs": "^16.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/eslint-parser": "^7.12.1",
+    "c8": "^7.3.0",
+    "eslint": "^7.9.0",
+    "mocha": "^8.1.3"
+  }
+}
