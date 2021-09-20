@@ -1,0 +1,49 @@
+{
+  "name": "yal2vpn",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Yet Another Layer 2 VPN",
+  "main": "lib/index.js",
+  "bin": {
+    "yal2vpn": "./lib/cli.js",
+    "yal2vpn-keygen": "./lib/cli-keygen.js"
+  },
+  "scripts": {
+    "test": "c8 --reporter lcov --reporter html --reporter text mocha",
+    "eslint": "eslint .",
+    "start": "node lib/cli -c config_bob.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k13-engineering/yal2vpn.git"
+  },
+  "keywords": [],
+  "author": "Simon Kadisch",
+  "license": "LGPL 2.1",
+  "bugs": {
+    "url": "https://github.com/k13-engineering/yal2vpn/issues"
+  },
+  "homepage": "https://github.com/k13-engineering/yal2vpn#readme",
+  "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.7",
+    "debug": "^4.3.3",
+    "express": "^4.17.2",
+    "express-ws": "^5.0.2",
+    "naive-emitter": "^0.0.1",
+    "node-datachannel": "^0.3.4",
+    "node-rsa": "^1.1.1",
+    "node-tuntap2": "git://github.com/k13-engineering/node-tuntap2.git#dev",
+    "reconnecting-websocket": "^4.4.0",
+    "uuid": "^8.3.2",
+    "wrtc": "^0.4.7",
+    "ws": "^8.3.0",
+    "yargs": "^16.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/eslint-parser": "^7.12.1",
+    "c8": "^7.3.0",
+    "eslint": "^7.9.0",
+    "mocha": "^9.1.4"
+  }
+}
