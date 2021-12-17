@@ -1,32 +1,32 @@
 import wrtc from "wrtc";
 import EventEmitter from "events";
 
+const iceServers = [
+  {
+    urls: "stun:stun.l.google.com:19302",
+  },
+];
+
 const initiate = () => {
   const emitter = new EventEmitter();
 
   const pc = new wrtc.RTCPeerConnection({
-    // iceServers: [
-    //     {
-    //         urls: 'stun:stun.l.google.com:19302'
-    //     }
-    // ]
+    iceServers,
   });
 
   const channel = pc.createDataChannel("vpn", {
     ordered: false,
-    maxRetransmits: 0
+    maxRetransmits: 0,
   });
   channel.addEventListener("open", () => {
     emitter.emit("open");
   });
-  channel.addEventListener("close", () => {
-
-  });
+  channel.addEventListener("close", () => {});
   channel.addEventListener("message", (event) => {
     const data = Buffer.from(event.data);
     emitter.emit("packet", data);
   });
-  
+
   channel.addEventListener("close", () => {
     emitter.emit("close");
   });
@@ -57,7 +57,10 @@ const initiate = () => {
   const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
 
   const send = ({ packet }) => {
-    if (channel.readyState === "open" && (channel.bufferedAmount + packet.length) < MAX_BUFFERED_AMOUNT) {
+    if (
+      channel.readyState === "open" &&
+      channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
+    ) {
       channel.send(packet);
     }
   };
@@ -74,14 +77,16 @@ const initiate = () => {
 
     send,
 
-    close
+    close,
   };
 };
 
 const createFromOffer = ({ sdp }) => {
   const emitter = new EventEmitter();
 
-  const pc = new wrtc.RTCPeerConnection({});
+  const pc = new wrtc.RTCPeerConnection({
+    iceServers,
+  });
   let channel = undefined;
 
   pc.addEventListener("icecandidate", (event) => {
@@ -90,7 +95,7 @@ const createFromOffer = ({ sdp }) => {
 
       const sdp = pc.localDescription.sdp;
 
-      emitter.emit("answer", ({ sdp }));
+      emitter.emit("answer", { sdp });
     }
   });
 
@@ -118,7 +123,7 @@ const createFromOffer = ({ sdp }) => {
     .then((answer) => {
       return pc.setLocalDescription(answer);
     });
-  
+
   const send = ({ packet }) => {
     if (channel) {
       channel.send(packet);
@@ -135,7 +140,7 @@ const createFromOffer = ({ sdp }) => {
 
     send,
 
-    close
+    close,
   };
 };
 
@@ -239,10 +244,10 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
     processPacket,
 
     send,
-    close
+    close,
   };
 };
 
 export default {
-  create
+  create,
 };
