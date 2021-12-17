@@ -1,0 +1,8 @@
+{
+    "bridgeName": "br-alice",
+    "privateKeyFile": "./keys/alice/key",
+    "publicKeyFiles": {
+        "alice": "./keys/alice/key.pub",
+        "bob": "./keys/bob/key.pub"
+    }
+}

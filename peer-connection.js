@@ -61,13 +61,19 @@ const initiate = () => {
     }
   };
 
+  const close = () => {
+    return pc.close();
+  };
+
   return {
     on: emitter.on.bind(emitter),
     once: emitter.once.bind(emitter),
 
     processAnswer,
 
-    send
+    send,
+
+    close
   };
 };
 
@@ -115,22 +121,28 @@ const createFromOffer = ({ sdp }) => {
     }
   };
 
+  const close = () => {
+    return pc.close();
+  };
+
   return {
     on: emitter.on.bind(emitter),
     once: emitter.once.bind(emitter),
 
-    send
+    send,
+
+    close
   };
 };
 
-const create = ({ clientId, peerId, sendToTownhall }) => {
+const create = ({ logger, clientId, peerId, sendToTownhall }) => {
   const emitter = new EventEmitter();
 
   let connection = undefined;
 
   const handlers = {
     hello() {
-      console.log(`hello from peer ${peerId}`);
+      logger.log(`received hello from peer ${peerId}`);
 
       if (!connection) {
         connection = initiate();
@@ -142,6 +154,7 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
             sdp,
           };
 
+          logger.log("sending SDP offer");
           sendToTownhall({ packet });
         });
         connection.on("open", () => {
@@ -155,31 +168,33 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
     },
 
     offer({ packet }) {
-      console.log(`offer from peer ${peerId}`);
+      logger.log(`received SDP offer from peer ${peerId}`);
+      // console.log(`offer from peer ${peerId}`);
       // console.log("got offer");
 
-      // connection = createFromOffer({ sdp: packet.sdp });
-      // connection.on("answer", ({ sdp }) => {
-      //   const packet = {
-      //     type: "answer",
-      //     from: clientId,
-      //     to: peerId,
-      //     sdp,
-      //   };
+      connection = createFromOffer({ sdp: packet.sdp });
+      connection.on("answer", ({ sdp }) => {
+        const packet = {
+          type: "answer",
+          from: clientId,
+          to: peerId,
+          sdp,
+        };
 
-      //   sendToTownhall({ packet });
-      // });
-      // connection.on("open", () => {
-      //   // console.log("peer connection open!");
-      //   emitter.emit("connected");
-      // });
-      // connection.on("packet", (msg) => {
-      //   emitter.emit("packet", msg);
-      // });
+        logger.log("sending SDP answer");
+        sendToTownhall({ packet });
+      });
+      connection.on("open", () => {
+        // console.log("peer connection open!");
+        emitter.emit("connected");
+      });
+      connection.on("packet", (msg) => {
+        emitter.emit("packet", msg);
+      });
     },
 
     answer({ packet }) {
-      console.log("got answer");
+      logger.log(`received SDP answer`);
       connection.processAnswer({ sdp: packet.sdp });
     },
   };

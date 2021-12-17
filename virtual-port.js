@@ -2,7 +2,7 @@ import tuntap2 from "./third_party/node-tuntap2/lib/index.js";
 import EventEmitter from "events";
 import rtnetlink from "./third_party/node-rtnetlink/index.js";
 
-const create = ({ bridge, mtu = 1200 }) => {
+const create = ({ logger, bridge, mtu = 1200 }) => {
   const emitter = new EventEmitter();
 
   let closed = false;
@@ -25,6 +25,8 @@ const create = ({ bridge, mtu = 1200 }) => {
         });
       }
 
+      logger.log(`interface ${dev.name} created`);
+
       return rt$.then((rt) => {
         const devLink = rt.link.fromIndex({ ifindex: dev.ifindex });
 
@@ -33,7 +35,8 @@ const create = ({ bridge, mtu = 1200 }) => {
             mtu,
           })
           .then(() => {
-            console.log("mtu set");
+            logger.log(`interface MTU set to ${mtu}`);
+
             dev.on("packet", (pkt) => {
               // if (pkt.length <= mtu) {
               emitter.emit("packet", pkt);
@@ -47,9 +50,11 @@ const create = ({ bridge, mtu = 1200 }) => {
       });
     })
     .then(() => {
+      logger.log("interface connected to bridge and ready");
       emitter.emit("ready");
     })
     .catch((err) => {
+      logger.error(err);
       emitter.emit("error", err);
     });
 
@@ -59,7 +64,7 @@ const create = ({ bridge, mtu = 1200 }) => {
       devOrNothing.send(packet).catch((err) => {
         if (err.code !== "EINVAL") {
           // TODO: check ethernet checksum, so we can skip this check
-          console.warn("most likely invalid packet");
+          logger.warn(`most likely invalid packet with size ${packet.length}`);
           emitter.emit("error", err);
         }
       });
@@ -70,7 +75,9 @@ const create = ({ bridge, mtu = 1200 }) => {
     closed = true;
 
     if (devOrNothing) {
-      devOrNothing.close().catch((err) => {
+      devOrNothing.close().then(() => {
+        logger.log("TAP device removed");
+      }).catch((err) => {
         console.error(err);
       });
     }
