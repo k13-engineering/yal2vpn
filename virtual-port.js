@@ -24,9 +24,11 @@ const create = ({ bridge, mtu = 1200 }) => {
           // mtu
         }).then(() => {
           dev.on("packet", (pkt) => {
-            if (pkt.length <= mtu) {
+            // if (pkt.length <= mtu) {
               emitter.emit("packet", pkt);
-            }
+            // } else {
+            //   console.warn(`packet size ${pkt.length} too large!`);
+            // }
           });
     
           return bridge.connect({ ifindex: dev.ifindex });
@@ -42,6 +44,7 @@ const create = ({ bridge, mtu = 1200 }) => {
 
   const send = ({ packet }) => {
     if (devOrNothing) {
+      console.log("sending", packet.length);
       devOrNothing.send(packet).catch((err) => {
         if (err.code !== "EINVAL") {
           // TODO: check ethernet checksum, so we can skip this check
