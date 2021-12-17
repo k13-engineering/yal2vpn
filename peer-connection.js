@@ -1,11 +1,12 @@
 import wrtc from "wrtc";
 import EventEmitter from "events";
 
-const iceServers = [
-  {
-    urls: "stun:stun.l.google.com:19302",
-  },
-];
+// const iceServers = [
+//   {
+//     urls: "stun:stun.l.google.com:19302",
+//   },
+// ];
+const iceServers = undefined;
 
 const initiate = () => {
   const emitter = new EventEmitter();
