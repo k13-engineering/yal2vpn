@@ -19,7 +19,7 @@ const create = ({ name, bridge, publicKey, sendToTownhall, peerId, clientId }) =
     console.log("discconnected!");
   });
   connection.on("packet", (msg) => {
-    console.log("received packet!", msg);
+    // console.log("received packet!", msg);
     virtualPort.send({ packet: msg });
   });
 
