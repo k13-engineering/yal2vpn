@@ -44,7 +44,7 @@ const create = ({ bridge, mtu = 1200 }) => {
 
   const send = ({ packet }) => {
     if (devOrNothing) {
-      console.log("sending", packet.length);
+      // console.log("sending", packet.length);
       devOrNothing.send(packet).catch((err) => {
         if (err.code !== "EINVAL") {
           // TODO: check ethernet checksum, so we can skip this check
