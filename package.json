@@ -24,6 +24,8 @@
   "homepage": "https://github.com/k13-engineering/yal2vpn#readme",
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.7",
+    "express": "^4.17.2",
+    "express-ws": "^5.0.2",
     "node-rsa": "^1.1.1",
     "uuid": "^8.3.2",
     "wrtc": "^0.4.7",

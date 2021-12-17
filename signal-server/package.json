@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "name": "signal-server",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.2",
+    "express-ws": "^5.0.2"
+  }
+}

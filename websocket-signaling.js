@@ -4,7 +4,7 @@ import WebSocket from "ws";
 const create = () => {
   const emitter = new EventEmitter();
 
-  const wsc = new WebSocket("ws://localhost:7777");
+  const wsc = new WebSocket("ws://3.69.253.209:8080/644c4f6c-fa52-4285-9317-69c14b599d79");
 
   wsc.on("open", () => {
     emitter.emit("connected");

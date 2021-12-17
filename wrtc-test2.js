@@ -75,6 +75,10 @@ brdigeFactory
     let peerSessions = {};
 
     secureTownhall.on("message", ({ key, packet }) => {
+      if (packet.from === clientId) {
+        return;
+      }
+
       console.log("packet =", packet);
 
       let peerSession = peerSessions[packet.from];
