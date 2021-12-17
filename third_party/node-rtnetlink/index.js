@@ -59,7 +59,8 @@ const open = async () => {
     "family": NETLINK_ROUTE
   });
   nl.on("message", (msg) => {
-    emitter.emit("message", convert(msg));
+    const rtnetlinkMsg = convert(msg);
+    emitter.emit("message", rtnetlinkMsg);
   });
 
   const tryTalk = async(obj) => {

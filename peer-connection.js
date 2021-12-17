@@ -27,15 +27,15 @@ const initiate = () => {
     emitter.emit("packet", data);
   });
   channel.onclose = () => {
-    console.log("channel close!");
+    // console.log("channel close!");
   };
 
   pc.addEventListener("icecandidate", (event) => {
     // console.log("event =", event);
     if (event.candidate === null) {
-      console.log("all candidates");
+      // console.log("all candidates");
       let sdp = pc.localDescription.sdp;
-      console.log("localDescription =", pc.localDescription);
+      // console.log("localDescription =", pc.localDescription);
 
       emitter.emit("offer", { sdp });
     }
@@ -79,7 +79,7 @@ const createFromOffer = ({ sdp }) => {
 
   pc.addEventListener("icecandidate", (event) => {
     if (event.candidate === null) {
-      console.log("remote ice candidate");
+      // console.log("remote ice candidate");
 
       const sdp = pc.localDescription.sdp;
 
@@ -88,8 +88,8 @@ const createFromOffer = ({ sdp }) => {
   });
 
   pc.addEventListener("datachannel", (event) => {
-    console.log("ondatachannel", event);
-    console.log("datachannel name =", event.channel.label);
+    // console.log("ondatachannel", event);
+    // console.log("datachannel name =", event.channel.label);
 
     event.channel.addEventListener("open", () => {
       channel = event.channel;
@@ -130,7 +130,7 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
 
   const handlers = {
     hello() {
-      console.log("got hello");
+      console.log(`hello from peer ${peerId}`);
 
       if (!connection) {
         connection = initiate();
@@ -145,7 +145,7 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
           sendToTownhall({ packet });
         });
         connection.on("open", () => {
-          console.log("peer connection open!");
+          // console.log("peer connection open!");
           emitter.emit("connected");
         });
         connection.on("packet", (msg) => {
@@ -155,26 +155,27 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
     },
 
     offer({ packet }) {
-      console.log("got offer");
+      console.log(`offer from peer ${peerId}`);
+      // console.log("got offer");
 
-      connection = createFromOffer({ sdp: packet.sdp });
-      connection.on("answer", ({ sdp }) => {
-        const packet = {
-          type: "answer",
-          from: clientId,
-          to: peerId,
-          sdp,
-        };
+      // connection = createFromOffer({ sdp: packet.sdp });
+      // connection.on("answer", ({ sdp }) => {
+      //   const packet = {
+      //     type: "answer",
+      //     from: clientId,
+      //     to: peerId,
+      //     sdp,
+      //   };
 
-        sendToTownhall({ packet });
-      });
-      connection.on("open", () => {
-        console.log("peer connection open!");
-        emitter.emit("connected");
-      });
-      connection.on("packet", (msg) => {
-        emitter.emit("packet", msg);
-      });
+      //   sendToTownhall({ packet });
+      // });
+      // connection.on("open", () => {
+      //   // console.log("peer connection open!");
+      //   emitter.emit("connected");
+      // });
+      // connection.on("packet", (msg) => {
+      //   emitter.emit("packet", msg);
+      // });
     },
 
     answer({ packet }) {
@@ -184,7 +185,7 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
   };
 
   const processPacket = ({ packet }) => {
-    console.log("peer packet =", packet);
+    // console.log("peer packet =", packet);
 
     const handler = handlers[packet.type];
     if (!handler) {
@@ -200,13 +201,20 @@ const create = ({ clientId, peerId, sendToTownhall }) => {
     }
   };
 
+  const close = () => {
+    if (connection) {
+      connection.close();
+    }
+  };
+
   return {
     on: emitter.on.bind(emitter),
     once: emitter.once.bind(emitter),
 
     processPacket,
 
-    send
+    send,
+    close
   };
 };
 

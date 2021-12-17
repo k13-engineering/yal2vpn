@@ -69,8 +69,6 @@ const setup = ({ fd, name, flags }) => {
 
   const actualName = ifr.get("ifr_name");
 
-  console.log("actualName =", actualName);
-
   return {
     actualName
   };
