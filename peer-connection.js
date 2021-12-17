@@ -26,9 +26,10 @@ const initiate = () => {
     const data = Buffer.from(event.data);
     emitter.emit("packet", data);
   });
-  channel.onclose = () => {
-    // console.log("channel close!");
-  };
+  
+  channel.addEventListener("close", () => {
+    console.log("channel close!");
+  });
 
   pc.addEventListener("icecandidate", (event) => {
     // console.log("event =", event);
@@ -104,6 +105,9 @@ const createFromOffer = ({ sdp }) => {
     event.channel.addEventListener("message", (event) => {
       const data = Buffer.from(event.data);
       emitter.emit("packet", data);
+    });
+    event.channel.addEventListener("close", () => {
+      console.log("channel closed");
     });
   });
 

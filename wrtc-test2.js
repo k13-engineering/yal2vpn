@@ -104,14 +104,22 @@ bridgeFactory
       privateKey,
     });
 
-    secureTownhall.on("connected", () => {
+    const sendHello = () => {
       const packet = {
         type: "hello",
         from: clientId,
       };
 
       secureTownhall.send({ packet });
+    };
+
+    secureTownhall.on("connected", () => {
+      sendHello();
     });
+
+    setInterval(() => {
+      sendHello();
+    }, 60 * 1000);
 
     secureTownhall.on("message", ({ key, packet }) => {
       if (packet.from === clientId) {

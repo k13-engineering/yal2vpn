@@ -41,6 +41,7 @@ const create = ({
     // console.log("global connected!");
   });
   connection.on("disconnected", () => {
+    peerLogger.log("peer-to-peer channel disconnected");
     // console.log("discconnected!");
   });
   connection.on("packet", (msg) => {
@@ -49,6 +50,7 @@ const create = ({
   });
 
   const close = () => {
+    peerLogger.log("closing session");
     connection.close();
     virtualPort.close();
   };
