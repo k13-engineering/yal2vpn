@@ -145,6 +145,15 @@ bridgeFactory
           clientId,
         });
 
+        peerSession.on("dead", () => {
+          peerSession.close();
+
+          const { [packet.from]: _, ...other } = peerSessions;
+          peerSessions = {
+            ...other
+          };
+        });
+
         peerSessions = {
           ...peerSessions,
           [packet.from]: peerSession,

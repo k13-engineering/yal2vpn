@@ -28,7 +28,7 @@ const initiate = () => {
   });
   
   channel.addEventListener("close", () => {
-    console.log("channel close!");
+    emitter.emit("close");
   });
 
   pc.addEventListener("icecandidate", (event) => {
@@ -107,7 +107,7 @@ const createFromOffer = ({ sdp }) => {
       emitter.emit("packet", data);
     });
     event.channel.addEventListener("close", () => {
-      console.log("channel closed");
+      emitter.emit("close");
     });
   });
 
@@ -165,6 +165,9 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
           // console.log("peer connection open!");
           emitter.emit("connected");
         });
+        connection.on("close", () => {
+          emitter.emit("disconnected");
+        });
         connection.on("packet", (msg) => {
           emitter.emit("packet", msg);
         });
@@ -191,6 +194,9 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
       connection.on("open", () => {
         // console.log("peer connection open!");
         emitter.emit("connected");
+      });
+      connection.on("close", () => {
+        emitter.emit("disconnected");
       });
       connection.on("packet", (msg) => {
         emitter.emit("packet", msg);

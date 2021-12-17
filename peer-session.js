@@ -1,5 +1,6 @@
 import peerConnectionFactory from "./peer-connection.js";
 import virtualPortFactory from "./virtual-port.js";
+import EventEmitter from "events";
 
 const create = ({
   logger,
@@ -10,6 +11,8 @@ const create = ({
   peerId,
   clientId,
 }) => {
+  const emitter = new EventEmitter();
+
   const passive = peerId < clientId;
 
   let peerLogger = {};
@@ -42,6 +45,7 @@ const create = ({
   });
   connection.on("disconnected", () => {
     peerLogger.log("peer-to-peer channel disconnected");
+    emitter.emit("dead");
     // console.log("discconnected!");
   });
   connection.on("packet", (msg) => {
@@ -56,6 +60,9 @@ const create = ({
   };
 
   return {
+    on: emitter.on.bind(emitter),
+    once: emitter.once.bind(emitter),
+
     processPacket: connection.processPacket,
     close,
   };
