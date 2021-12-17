@@ -1,0 +1,33 @@
+{
+  "name": "node-rtnetlink",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "rtnetlink communication for node",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k13-engineering/node-rtnetlink.git"
+  },
+  "keywords": [
+    "rtnetlink",
+    "netlink",
+    "link",
+    "network",
+    "interfaces"
+  ],
+  "author": "Simon Kadisch",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/k13-engineering/node-rtnetlink/issues"
+  },
+  "homepage": "https://github.com/k13-engineering/node-rtnetlink#readme",
+  "dependencies": {
+    "ya-struct": "^0.0.2"
+  },
+  "devDependencies": {
+    "mocha": "^8.0.0"
+  }
+}
