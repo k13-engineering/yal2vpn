@@ -3,7 +3,6 @@ import encryptedSignaling from "./encrypted-signaling.js";
 import peerSessionFactory from "./peer-session.js";
 import fs from "fs";
 import { v4 } from "uuid";
-import rtnetlink from "../node-rtnetlink/index.js";
 import brdigeFactory from "./bridge.js";
 
 const publicKeys = {

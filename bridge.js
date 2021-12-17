@@ -1,4 +1,4 @@
-import rtnetlink from "../node-rtnetlink/index.js";
+import rtnetlink from "./third_party/node-rtnetlink/index.js";
 
 const createOrHijack = ({ bridgeName }) => {
   return rtnetlink.open().then((rt) => {
