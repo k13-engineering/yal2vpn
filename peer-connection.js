@@ -64,12 +64,12 @@ const initiate = () => {
   const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
 
   const send = ({ packet }) => {
-    // if (
-    //   channel.readyState === "open" &&
-    //   channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
-    // ) {
+    if (
+      channel.readyState === "open" &&
+      channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
+    ) {
       channel.send(packet);
-    // }
+    }
   };
 
   const close = () => {
