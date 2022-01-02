@@ -1,5 +1,6 @@
 import wrtc from "wrtc";
 import EventEmitter from "events";
+import RTCPeerConnection from "../node-webrtc-stack/lib/rtc-peer-connection.js";
 
 // const iceServers = [
 //   {
@@ -11,7 +12,8 @@ const iceServers = undefined;
 const initiate = () => {
   const emitter = new EventEmitter();
 
-  const pc = new wrtc.RTCPeerConnection({
+  // const pc = new wrtc.RTCPeerConnection({
+  const pc = new RTCPeerConnection({
     iceServers,
   });
 
