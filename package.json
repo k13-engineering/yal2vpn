@@ -27,6 +27,8 @@
     "express": "^4.17.2",
     "express-ws": "^5.0.2",
     "node-rsa": "^1.1.1",
+    "node-rtnetlink": "^0.0.2",
+    "syscall-napi": "^0.0.4",
     "uuid": "^8.3.2",
     "wrtc": "^0.4.7",
     "ws": "^8.3.0",
