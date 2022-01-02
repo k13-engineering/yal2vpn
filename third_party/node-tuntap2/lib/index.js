@@ -7,7 +7,7 @@ import ioctl from "ioctl";
 // import util from "util";
 
 import structures from "./structures.js";
-import rtnetlink from "../../node-rtnetlink/index.js";
+import rtnetlink from "node-rtnetlink";
 
 import EventEmitter from "events";
 

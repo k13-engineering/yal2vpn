@@ -1,6 +1,6 @@
 import tuntap2 from "./third_party/node-tuntap2/lib/index.js";
 import EventEmitter from "events";
-import rtnetlink from "./third_party/node-rtnetlink/index.js";
+import rtnetlink from "node-rtnetlink";
 
 const create = ({ logger, bridge, mtu = 1200 }) => {
   const emitter = new EventEmitter();
