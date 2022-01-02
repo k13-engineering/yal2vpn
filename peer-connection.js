@@ -87,7 +87,8 @@ const initiate = () => {
 const createFromOffer = ({ sdp }) => {
   const emitter = new EventEmitter();
 
-  const pc = new wrtc.RTCPeerConnection({
+  // const pc = new wrtc.RTCPeerConnection({
+  const pc = new RTCPeerConnection({
     iceServers,
   });
   let channel = undefined;
