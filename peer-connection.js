@@ -1,6 +1,7 @@
 import wrtc from "wrtc";
 import EventEmitter from "events";
 import RTCPeerConnection from "../node-webrtc-stack/lib/rtc-peer-connection.js";
+import debugFactory from "debug";
 
 // const iceServers = [
 //   {
@@ -8,6 +9,8 @@ import RTCPeerConnection from "../node-webrtc-stack/lib/rtc-peer-connection.js";
 //   },
 // ];
 const iceServers = undefined;
+
+const debug = debugFactory("peer-connection");
 
 const initiate = () => {
   const emitter = new EventEmitter();
@@ -22,10 +25,11 @@ const initiate = () => {
     maxRetransmits: 0,
   });
   channel.addEventListener("open", () => {
+    debug("channel opened");
     emitter.emit("open");
   });
-  channel.addEventListener("close", () => {});
   channel.addEventListener("message", (event) => {
+    debug(`received packet with ${event.data.length} bytes`);
     const data = Buffer.from(event.data);
     emitter.emit("packet", data);
   });
@@ -60,12 +64,12 @@ const initiate = () => {
   const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
 
   const send = ({ packet }) => {
-    if (
-      channel.readyState === "open" &&
-      channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
-    ) {
+    // if (
+    //   channel.readyState === "open" &&
+    //   channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
+    // ) {
       channel.send(packet);
-    }
+    // }
   };
 
   const close = () => {
