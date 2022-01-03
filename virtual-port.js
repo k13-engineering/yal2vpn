@@ -61,13 +61,13 @@ const create = ({ logger, bridge, mtu = 1200 }) => {
   const send = ({ packet }) => {
     if (devOrNothing) {
       // console.log("sending", packet.length);
-      devOrNothing.send(packet).catch((err) => {
+      devOrNothing.send(packet)/*.catch((err) => {
         if (err.code !== "EINVAL") {
           // TODO: check ethernet checksum, so we can skip this check
           logger.warn(`most likely invalid packet with size ${packet.length}`);
           emitter.emit("error", err);
         }
-      });
+      });*/
     }
   };
 
