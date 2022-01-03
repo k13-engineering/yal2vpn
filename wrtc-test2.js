@@ -17,6 +17,10 @@ const { argv } = yargs(hideBin(process.argv))
   .alias("c", "config")
   .strict();
 
+// setInterval(() => {
+//   global.gc();
+// }, 200);
+
 const logger = loggerFactory.create({});
 
 const configFilePath = path.resolve(argv.config);
