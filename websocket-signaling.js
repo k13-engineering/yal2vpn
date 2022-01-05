@@ -37,9 +37,8 @@ const create = ({ logger, url }) => {
     maybeInformAboutConnection();
   });
 
-  rws.addEventListener("message", (msg) => {
-    console.log("msg =", msg);
-    const msgAsBase64String = msg.toString("utf8");
+  rws.addEventListener("message", ({ data }) => {
+    const msgAsBase64String = data.toString("utf8");
     const msgAsBuffer = Buffer.from(msgAsBase64String, "base64");
 
     emitter.emit("message", msgAsBuffer);
