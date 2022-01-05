@@ -21,7 +21,10 @@ const emitterForWeb = () => {
 const wrapChannel = ({ channel }) => {
   const emitter = emitterForWeb();
 
+  let _readyState = "connecting";
+
   channel.onOpen(() => {
+    _readyState = "open";
     emitter.emit("open");
   });
 
@@ -31,6 +34,7 @@ const wrapChannel = ({ channel }) => {
   });
 
   channel.onClosed(() => {
+    _readyState = "closed";
     emitter.emit("close");
   });
 
@@ -45,6 +49,14 @@ const wrapChannel = ({ channel }) => {
 
   return {
     send,
+
+    get readyState() {
+        return _readyState;
+    },
+
+    get bufferedAmount() {
+        return channel.bufferedAmount();
+    },
 
     addEventListener: emitter.addEventListener,
   };

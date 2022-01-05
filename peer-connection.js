@@ -70,6 +70,8 @@ const initiate = () => {
       channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
     ) {
       channel.send(packet);
+    } else {
+      console.log("dropping packet");
     }
   };
 
