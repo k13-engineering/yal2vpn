@@ -4,12 +4,14 @@ import EventEmitter from "events";
 import RTCPeerConnection from "./datachannel-peerconnection.js";
 import debugFactory from "debug";
 
-// const iceServers = [
-//   {
-//     urls: "stun:stun.l.google.com:19302",
-//   },
-// ];
-const iceServers = undefined;
+const iceServers = [
+  {
+    urls: "stun:5.44.99.99:3478",
+  },
+  {
+    urls: "turn:5.44.99.99:3478"
+  }
+];
 
 const debug = debugFactory("peer-connection");
 
