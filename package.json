@@ -30,10 +30,8 @@
     "node-datachannel": "^0.2.0",
     "node-rsa": "^1.1.1",
     "node-rtnetlink": "^0.0.3",
-    "syscall-napi": "^0.0.4",
     "uuid": "^8.3.2",
     "why-is-node-running": "^2.2.0",
-    "wrtc": "^0.4.7",
     "ws": "^8.3.0",
     "yargs": "^16.1.1"
   },
