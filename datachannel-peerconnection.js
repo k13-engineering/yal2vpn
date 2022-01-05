@@ -26,6 +26,7 @@ const wrapChannel = ({ channel }) => {
   });
 
   channel.onMessage((msg) => {
+      console.log("channel on message");
     emitter.emit("message", { data: msg });
   });
 
@@ -34,7 +35,11 @@ const wrapChannel = ({ channel }) => {
   });
 
   const send = (msg) => {
-    channel.sendMessage(msg);
+    if (typeof msg === "string") {
+      channel.sendMessage(msg);
+    } else {
+      channel.sendMessageBinary(msg);
+    }
   };
 
   return {
@@ -54,7 +59,6 @@ export default function (options) {
   this.addEventListener = emitter.addEventListener;
 
   this.setLocalDescription = (desc) => {
-    console.log("set local");
     return Promise.resolve().then(() => {
       pc.setLocalDescription(desc.sdp, desc.type);
     });
@@ -62,7 +66,6 @@ export default function (options) {
 
   this.setRemoteDescription = (desc) => {
     return Promise.resolve().then(() => {
-      console.log("remote desc");
       pc.setRemoteDescription(desc.sdp, desc.type);
     });
   };
@@ -72,7 +75,6 @@ export default function (options) {
   //   });
 
   this.createAnswer = () => {
-    console.log("createAnswer");
     return Promise.resolve().then(() => {
       return pc.localDescription();
     });
@@ -95,7 +97,7 @@ export default function (options) {
   });
 
   pc.onDataChannel((channel) => {
-    emitter.emit("channel", {
+    emitter.emit("datachannel", {
       channel: wrapChannel({ channel }),
     });
   });

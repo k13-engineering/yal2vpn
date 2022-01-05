@@ -99,6 +99,8 @@ const createFromOffer = ({ sdp }) => {
   let channel = undefined;
 
   pc.addEventListener("icecandidate", (event) => {
+    console.log("icecandidate", event);
+
     if (event.candidate === null) {
       // console.log("remote ice candidate");
 
@@ -109,10 +111,11 @@ const createFromOffer = ({ sdp }) => {
   });
 
   pc.addEventListener("datachannel", (event) => {
-    // console.log("ondatachannel", event);
+    console.log("ondatachannel", event);
     // console.log("datachannel name =", event.channel.label);
 
     event.channel.addEventListener("open", () => {
+      console.log("channel on open in peer connection");
       channel = event.channel;
       emitter.emit("open");
     });
@@ -124,7 +127,7 @@ const createFromOffer = ({ sdp }) => {
       emitter.emit("close");
     });
   });
-  
+
   pc.setRemoteDescription({ type: "offer", sdp })
     .then(() => {
       return pc.createAnswer();
