@@ -65,11 +65,15 @@ const create = ({ townhall, privateKey, publicKeys }) => {
     emitter.emit("connected");
   });
 
+  townhall.on("disconnected", () => {
+    emitter.emit("disconnected");
+  });
+
   townhall.on("message", (msgAsBuffer) => {
     const decrypted = tryDecryptPacket({ publicKeys, packet: msgAsBuffer });
     if (decrypted) {
       const { key, data } = decrypted;
-  
+
       const dataAsString = data.toString("utf8");
       const packet = JSON.parse(dataAsString);
 

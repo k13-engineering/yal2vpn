@@ -30,6 +30,7 @@
     "node-datachannel": "^0.2.0",
     "node-rsa": "^1.1.1",
     "node-rtnetlink": "^0.0.3",
+    "reconnecting-websocket": "^4.4.0",
     "uuid": "^8.3.2",
     "why-is-node-running": "^2.2.0",
     "ws": "^8.3.0",

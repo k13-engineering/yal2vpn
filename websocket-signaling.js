@@ -1,25 +1,64 @@
 import EventEmitter from "events";
 import WebSocket from "ws";
+import ReconnectingWebSocket from "reconnecting-websocket";
 
-const create = () => {
+const create = ({ logger, url }) => {
   const emitter = new EventEmitter();
 
-  const wsc = new WebSocket("ws://3.69.253.209:8080/644c4f6c-fa52-4285-9317-69c14b599d79");
+  let open = false;
+  let lastEmittedOpen = false;
+  const maybeInformAboutConnection = () => {
+    if (open === lastEmittedOpen) {
+      return;
+    }
 
-  wsc.on("open", () => {
-    emitter.emit("connected");
+    if (open) {
+      emitter.emit("connected");
+    } else {
+      emitter.emit("disconnected");
+    }
+
+    lastEmittedOpen = open;
+  };
+
+  const rws = new ReconnectingWebSocket(
+    url,
+    [],
+    {
+      WebSocket,
+      maxReconnectionDelay: 60000,
+    }
+  );
+
+  rws.addEventListener("open", () => {
+    logger.log("WebSocket connected");
+
+    open = true;
+    maybeInformAboutConnection();
   });
 
-  wsc.on("message", (msg) => {
+  rws.addEventListener("message", (msg) => {
+    console.log("msg =", msg);
     const msgAsBase64String = msg.toString("utf8");
     const msgAsBuffer = Buffer.from(msgAsBase64String, "base64");
 
     emitter.emit("message", msgAsBuffer);
   });
 
+  rws.addEventListener("close", () => {
+    logger.warn("WebSocket closed");
+
+    open = false;
+    maybeInformAboutConnection();
+  });
+
+  rws.addEventListener("error", ({ error, message }) => {
+    logger.error("WebSocket error", message);
+  });
+
   const send = ({ packet }) => {
     const packetAsBase64 = packet.toString("base64");
-    wsc.send(packetAsBase64);
+    rws.send(packetAsBase64);
   };
 
   return {

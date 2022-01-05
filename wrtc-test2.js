@@ -52,12 +52,15 @@ const privateKey = fs.readFileSync(privateKeyFile, "utf8");
 
 let publicKeys = {};
 Object.keys(config.publicKeyFiles).forEach((name) => {
-  const publicKeyFile = path.resolve(configFileDirectory, config.publicKeyFiles[name]);
+  const publicKeyFile = path.resolve(
+    configFileDirectory,
+    config.publicKeyFiles[name]
+  );
   logger.log(`using public key file "${publicKeyFile}" to identify "${name}"`);
 
   publicKeys = {
     ...publicKeys,
-    [name]: fs.readFileSync(publicKeyFile, "utf8")
+    [name]: fs.readFileSync(publicKeyFile, "utf8"),
   };
 });
 
@@ -105,7 +108,10 @@ bridgeFactory
       cleanupAtExit();
     });
 
-    const townhall = websocketSignaling.create();
+    const townhall = websocketSignaling.create({
+      logger,
+      url: "ws://3.69.253.209:8080/644c4f6c-fa52-4285-9317-69c14b599d79",
+    });
     const secureTownhall = encryptedSignaling.create({
       townhall,
       publicKeys,
@@ -123,6 +129,10 @@ bridgeFactory
 
     secureTownhall.on("connected", () => {
       sendHello();
+    });
+
+    secureTownhall.on("disconnected", () => {
+      logger.warn("lost connection to signaling server");
     });
 
     setInterval(() => {
@@ -158,7 +168,7 @@ bridgeFactory
 
           const { [packet.from]: _, ...other } = peerSessions;
           peerSessions = {
-            ...other
+            ...other,
           };
         });
 
