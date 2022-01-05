@@ -29,7 +29,7 @@ const wrapChannel = ({ channel }) => {
     emitter.emit("message", { data: msg });
   });
 
-  channel.onClose(() => {
+  channel.onClosed(() => {
     emitter.emit("close");
   });
 
@@ -45,20 +45,42 @@ const wrapChannel = ({ channel }) => {
 };
 
 export default function (options) {
-  const pc = new datachannel.PeerConnection("pc", options);
+  const pc = new datachannel.PeerConnection("pc", {
+    ...options,
+    iceServers: options.iceServers || [],
+  });
 
   const emitter = emitterForWeb();
   this.addEventListener = emitter.addEventListener;
 
   this.setLocalDescription = (desc) => {
-    return Promise.resolve(() => {
+    console.log("set local");
+    return Promise.resolve().then(() => {
       pc.setLocalDescription(desc.sdp, desc.type);
     });
   };
 
   this.setRemoteDescription = (desc) => {
-    return Promise.resolve(() => {
+    return Promise.resolve().then(() => {
+      console.log("remote desc");
       pc.setRemoteDescription(desc.sdp, desc.type);
+    });
+  };
+
+  //   pc.onLocalDescription(() => {
+  //     console.log("local description =", pc.localDescription());
+  //   });
+
+  this.createAnswer = () => {
+    console.log("createAnswer");
+    return Promise.resolve().then(() => {
+      return pc.localDescription();
+    });
+  };
+
+  this.createOffer = () => {
+    return Promise.resolve().then(() => {
+      return pc.localDescription();
     });
   };
 

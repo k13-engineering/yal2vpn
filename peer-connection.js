@@ -1,6 +1,7 @@
 import wrtc from "wrtc";
 import EventEmitter from "events";
-import RTCPeerConnection from "../node-webrtc-stack/lib/rtc-peer-connection.js";
+// import RTCPeerConnection from "../node-webrtc-stack/lib/rtc-peer-connection.js";
+import RTCPeerConnection from "./datachannel-peerconnection.js";
 import debugFactory from "debug";
 
 // const iceServers = [
@@ -123,7 +124,7 @@ const createFromOffer = ({ sdp }) => {
       emitter.emit("close");
     });
   });
-
+  
   pc.setRemoteDescription({ type: "offer", sdp })
     .then(() => {
       return pc.createAnswer();
