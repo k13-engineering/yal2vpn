@@ -9,7 +9,9 @@ const iceServers = [
     urls: "stun:5.44.99.99:3478",
   },
   {
-    urls: "turn:5.44.99.99:3478"
+    urls: "turn:5.44.99.99:3478",
+    username: "test",
+    credential: "abc"
   }
 ];
 
