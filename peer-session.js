@@ -36,6 +36,7 @@ const create = ({
   });
 
   virtualPort.on("packet", (packet) => {
+    // console.log(`packet with ${packet.length} bytes from TAP`);
     connection.send({ packet });
   });
 

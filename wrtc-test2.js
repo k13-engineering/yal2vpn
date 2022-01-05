@@ -9,6 +9,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import path from "path";
 import loggerFactory from "./logger.js";
+import whyIsNodeRunning from "why-is-node-running";
 
 const { argv } = yargs(hideBin(process.argv))
   .usage("Usage: yal2vpn -c [config.json]")
@@ -17,6 +18,9 @@ const { argv } = yargs(hideBin(process.argv))
   .alias("c", "config")
   .strict();
 
+process.on("SIGUSR1", () => {
+  whyIsNodeRunning();
+});
 // setInterval(() => {
 //   global.gc();
 // }, 200);
