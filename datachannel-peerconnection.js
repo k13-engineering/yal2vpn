@@ -29,7 +29,6 @@ const wrapChannel = ({ channel }) => {
   });
 
   channel.onMessage((msg) => {
-    console.log("channel on message");
     emitter.emit("message", { data: msg });
   });
 
@@ -39,7 +38,6 @@ const wrapChannel = ({ channel }) => {
   });
 
   const send = (msg) => {
-    console.log("sending message");
     if (typeof msg === "string") {
       channel.sendMessage(msg);
     } else {
