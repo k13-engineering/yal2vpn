@@ -144,9 +144,9 @@ bridgeFactory
         return;
       }
 
-      // if (packet.to !== undefined && packet.to !== clientId) {
-      //   return;
-      // }
+      if (packet.to !== undefined && packet.to !== clientId) {
+        return;
+      }
 
       console.log("packet =", packet);
 
@@ -182,7 +182,23 @@ bridgeFactory
         };
       }
 
-      peerSession.processPacket({ packet });
+      try {
+        peerSession.processPacket({ packet });
+      } catch (ex) {
+        logger.error("failed to process packet", packet, "resulted in exception", ex);
+        logger.error("destroying associated peer session...");
+
+        try {
+          peerSession.close();
+        } catch (ex) {
+          logger.error("closing of peer session not possible", ex);
+        }
+
+        const { [packet.from]: _, ...other } = peerSessions;
+        peerSessions = {
+          ...other,
+        };
+      }
     });
   });
 

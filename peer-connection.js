@@ -50,9 +50,11 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
       const data = Buffer.from(event.data);
       emitter.emit("packet", data);
     });
-
     channel.addEventListener("close", () => {
       emitter.emit("close");
+    });
+    channel.addEventListener("error", (err) => {
+      emitter.emit("error", err);
     });
 
     pc.addEventListener("icecandidate", (event) => {
@@ -68,14 +70,16 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
 
     pc.createOffer()
       .then((d) => {
-        pc.setLocalDescription(d);
+        return pc.setLocalDescription(d);
       })
       .catch((ex) => {
-        console.error(ex);
+        emitter.emit("error", ex);
       });
 
     const processAnswer = ({ sdp }) => {
-      pc.setRemoteDescription({ type: "answer", sdp });
+      pc.setRemoteDescription({ type: "answer", sdp }).catch((err) => {
+        emitter.emit("error", err);
+      });
     };
 
     const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
@@ -141,7 +145,7 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
         emitter.emit("close");
       });
       event.channel.addEventListener("error", (event) => {
-        logger.log("unhandeled channel error", event);
+        emitter.emit("error", event);
       });
     });
 
@@ -151,6 +155,8 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
       })
       .then((answer) => {
         return pc.setLocalDescription(answer);
+      }).catch((err) => {
+        emitter.emit("error", err);
       });
 
     const send = ({ packet }) => {

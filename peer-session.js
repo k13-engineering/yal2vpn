@@ -49,6 +49,11 @@ const create = ({
     emitter.emit("dead");
     // console.log("discconnected!");
   });
+  connection.on("error", (err) => {
+    peerLogger.log("peer-to-peer error", err);
+    connection.close();
+    emitter.emit("dead");
+  });
   connection.on("packet", (msg) => {
     // console.log("received packet!", msg);
     virtualPort.send({ packet: msg });
