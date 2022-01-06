@@ -5,13 +5,18 @@ import RTCPeerConnection from "./datachannel-peerconnection.js";
 import debugFactory from "debug";
 
 const iceServers = [
+  // {
+  //   urls: ["stun:5.44.99.99:3478"],
+  // },
+  // {
+  //   urls: ["turn:5.44.99.99:3478"],
+  //   username: "test",
+  //   credential: "abc"
+  // }
   {
-    urls: ["stun:5.44.99.99:3478"],
-  },
-  {
-    urls: ["turn:5.44.99.99:3478"],
-    username: "test",
-    credential: "abc"
+    hostname: "5.44.99.99",
+    port: 3478,
+    relayType: "TurnUdp"
   }
 ];
 
