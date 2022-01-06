@@ -21,18 +21,20 @@ const emitterForWeb = () => {
 };
 
 const createSafeContext = ({ error }) => {
-  const run = (fn) => {
-    try {
-      fn();
-    } catch (ex) {
-      process.nextTick(() => {
-        error(ex);
-      });
-    }
+  const callback = (fn) => {
+    return (...args) => {
+      try {
+        fn(...args);
+      } catch (ex) {
+        process.nextTick(() => {
+          error(ex);
+        });
+      }
+    };
   };
 
   return {
-    run,
+    callback,
   };
 };
 
@@ -48,27 +50,27 @@ const wrapChannel = ({ channel }) => {
   let internalReadyState = "connecting";
 
   channel.onOpen(
-    safeCtx.run(() => {
+    safeCtx.callback(() => {
       internalReadyState = "open";
       emitter.emit("open");
     })
   );
 
   channel.onMessage(
-    safeCtx.run((msg) => {
+    safeCtx.callback((msg) => {
       emitter.emit("message", { data: msg });
     })
   );
 
   channel.onClosed(
-    safeCtx.run(() => {
+    safeCtx.callback(() => {
       internalReadyState = "closed";
       emitter.emit("close");
     })
   );
 
   channel.onError(
-    safeCtx.run((err) => {
+    safeCtx.callback((err) => {
       emitter.emit("error", err);
     })
   );
@@ -141,17 +143,17 @@ export default function (options) {
     });
   };
 
-  pc.onLocalCandidate(safeCtx.run((candidate, mid) => {
+  pc.onLocalCandidate(safeCtx.callback((candidate, mid) => {
     emitter.emit("icecandidate", { candidate });
   }));
 
-  pc.onGatheringStateChange(safeCtx.run((state) => {
+  pc.onGatheringStateChange(safeCtx.callback((state) => {
     if (state === "complete") {
       emitter.emit("icecandidate", { candidate: null });
     }
   }));
 
-  pc.onDataChannel(safeCtx.run((channel) => {
+  pc.onDataChannel(safeCtx.callback((channel) => {
     emitter.emit("datachannel", {
       channel: wrapChannel({ channel }),
     });
