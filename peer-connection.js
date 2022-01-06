@@ -83,6 +83,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
       emitter.emit("packet", data);
     });
     channel.addEventListener("close", () => {
+      logger.log("datachannel closed");
       emitter.emit("close");
     });
     channel.addEventListener("error", (err) => {

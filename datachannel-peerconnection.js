@@ -62,6 +62,10 @@ const wrapChannel = ({ channel }) => {
   };
 };
 
+const convertIceServers = ({ iceServers }) => {
+
+};
+
 export default function (options) {
   const pc = new datachannel.PeerConnection("pc", {
     ...options,
