@@ -8,23 +8,25 @@ const iceServers = [
   // {
   //   urls: ["stun:5.44.99.99:3478"],
   // },
-  // {
-  //   urls: ["turn:5.44.99.99:3478"],
-  //   username: "test",
-  //   credential: "abc"
-  // }
+  {
+    urls: ["turn:5.44.99.99:3478"],
+    username: "test",
+    credential: "abc"
+  }
 
   // {
   //   hostname: "5.44.99.99",
   //   port: 3478,
   // },
-  {
-    hostname: "5.44.99.99",
-    port: 3478,
-    relayType: "TurnUdp",
-    username: "test",
-    password: "abc",
-  },
+
+
+  // {
+  //   hostname: "5.44.99.99",
+  //   port: 3478,
+  //   relayType: "TurnUdp",
+  //   username: "test",
+  //   password: "abc",
+  // },
 
   // {
   //   hostname: "turn.bistri.com",
