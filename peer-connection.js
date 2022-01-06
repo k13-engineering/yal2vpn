@@ -16,7 +16,9 @@ const iceServers = [
   {
     hostname: "5.44.99.99",
     port: 3478,
-    relayType: "TurnUdp"
+    relayType: "TurnUdp",
+    username: "test",
+    password: "abc"
   }
 ];
 
