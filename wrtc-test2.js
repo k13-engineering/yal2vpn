@@ -100,11 +100,11 @@ bridgeFactory
     process.on("SIGINT", cleanupAtExit);
     process.on("SIGTERM", cleanupAtExit);
     process.on("uncaughtException", (err) => {
-      console.error(err);
+      console.error("uncauhgtException", err);
       cleanupAtExit();
     });
     process.on("unhandledRejection", (err) => {
-      console.error(err);
+      console.error("unhandledRejection", err);
       cleanupAtExit();
     });
 
@@ -144,9 +144,9 @@ bridgeFactory
         return;
       }
 
-      if (packet.to !== undefined && packet.to !== clientId) {
-        return;
-      }
+      // if (packet.to !== undefined && packet.to !== clientId) {
+      //   return;
+      // }
 
       console.log("packet =", packet);
 
