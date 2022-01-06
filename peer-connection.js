@@ -1,4 +1,4 @@
-// import wrtc from "wrtc";
+import wrtc from "wrtc";
 import EventEmitter from "events";
 // import RTCPeerConnection from "../node-webrtc-stack/lib/rtc-peer-connection.js";
 import RTCPeerConnection from "./datachannel-peerconnection.js";
@@ -35,6 +35,11 @@ const iceServers = [
   // },
 ];
 
+const createRTCPeerConnection = (...args) => {
+  return wrtc.RTCPeerConnection(...args);
+  // return new RTCPeerConnection(...args);
+};
+
 const debug = debugFactory("peer-connection");
 
 const createSublogger = ({ logger, prefix }) => {
@@ -64,8 +69,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
   const initiate = () => {
     const emitter = new EventEmitter();
 
-    // const pc = new wrtc.RTCPeerConnection({
-    const pc = new RTCPeerConnection({
+    const pc = createRTCPeerConnection({
       iceServers,
     });
 
@@ -149,8 +153,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
   const createFromOffer = ({ sdp }) => {
     const emitter = new EventEmitter();
 
-    // const pc = new wrtc.RTCPeerConnection({
-    const pc = new RTCPeerConnection({
+    const pc = createRTCPeerConnection({
       iceServers,
     });
     let channel = undefined;
