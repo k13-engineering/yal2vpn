@@ -115,7 +115,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
       });
     };
 
-    const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
+    const MAX_BUFFERED_AMOUNT = 128 * 1024;
 
     const send = ({ packet }) => {
       if (
@@ -129,6 +129,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
     };
 
     const close = () => {
+      logger.log("calling close()");
       return pc.close();
     };
 
@@ -201,6 +202,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
     };
 
     const close = () => {
+      logger.log("calling close()");
       return pc.close();
     };
 

@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import datachannel from "node-datachannel";
 
-datachannel.initLogger("Debug");
+datachannel.initLogger("Verbose");
 
 const emitterForWeb = () => {
   const emitter = new EventEmitter();
