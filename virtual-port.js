@@ -19,17 +19,17 @@ const create = ({ logger, bridge, mtu = 1200 }) => {
 
     rt$
       .then((rt) => {
-        const devLink = rt.link.fromIndex({ ifindex });
+        // const devLink = rt.link.fromIndex({ ifindex });
 
-        return devLink
-          .modify({
-            mtu,
-          })
-          .then(() => {
-            logger.log(`interface MTU set to ${mtu}`);
+        // return devLink
+        //   .modify({
+        //     mtu,
+        //   })
+        //   .then(() => {
+        //     logger.log(`interface MTU set to ${mtu}`);
 
-            return bridge.connect({ ifindex });
-          });
+        //     return bridge.connect({ ifindex });
+        //   });
       })
       .then(() => {
         logger.log("interface connected to bridge and ready");

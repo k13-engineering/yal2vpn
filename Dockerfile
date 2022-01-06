@@ -4,10 +4,14 @@ FROM node:15-buster
 
 COPY --chown=node . /home/node/app/
 
+#USER root
+#RUN apt-get update -y && apt-get install -y strace
+
 USER node
 WORKDIR /home/node/app
 
 RUN npm install
 
 USER root
-CMD npm start
+
+CMD node /home/node/app/wrtc-test2.js -c config_bob.json

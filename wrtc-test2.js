@@ -84,9 +84,11 @@ bridgeFactory
         peerSessions[key].close();
       });
 
-      console.error("removing bridge");
-      bridge
-        .deleteLink()
+      Promise.resolve()
+        .then(() => {
+          // logger.log("removing bridge");
+          // return bridge.deleteLink();
+        })
         .then(() => {
           console.log("calling process exit");
           process.exit(0);
@@ -185,7 +187,12 @@ bridgeFactory
       try {
         peerSession.processPacket({ packet });
       } catch (ex) {
-        logger.error("failed to process packet", packet, "resulted in exception", ex);
+        logger.error(
+          "failed to process packet",
+          packet,
+          "resulted in exception",
+          ex
+        );
         logger.error("destroying associated peer session...");
 
         try {
