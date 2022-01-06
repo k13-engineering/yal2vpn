@@ -144,7 +144,7 @@ bridgeFactory
         return;
       }
 
-      // console.log("packet =", packet);
+      console.log("packet =", packet);
 
       let peerSession = peerSessions[packet.from];
 
