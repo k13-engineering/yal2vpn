@@ -20,24 +20,58 @@ const emitterForWeb = () => {
   };
 };
 
+const createSafeContext = ({ error }) => {
+  const run = (fn) => {
+    try {
+      fn();
+    } catch (ex) {
+      process.nextTick(() => {
+        error(ex);
+      });
+    }
+  };
+
+  return {
+    run,
+  };
+};
+
 const wrapChannel = ({ channel }) => {
   const emitter = emitterForWeb();
 
-  let _readyState = "connecting";
-
-  channel.onOpen(() => {
-    _readyState = "open";
-    emitter.emit("open");
+  const safeCtx = createSafeContext({
+    error(err) {
+      emitter.emit("error", err);
+    },
   });
 
-  channel.onMessage((msg) => {
-    emitter.emit("message", { data: msg });
-  });
+  let internalReadyState = "connecting";
 
-  channel.onClosed(() => {
-    _readyState = "closed";
-    emitter.emit("close");
-  });
+  channel.onOpen(
+    safeCtx.run(() => {
+      internalReadyState = "open";
+      emitter.emit("open");
+    })
+  );
+
+  channel.onMessage(
+    safeCtx.run((msg) => {
+      emitter.emit("message", { data: msg });
+    })
+  );
+
+  channel.onClosed(
+    safeCtx.run(() => {
+      internalReadyState = "closed";
+      emitter.emit("close");
+    })
+  );
+
+  channel.onError(
+    safeCtx.run((err) => {
+      emitter.emit("error", err);
+    })
+  );
 
   const send = (msg) => {
     if (typeof msg === "string") {
@@ -51,20 +85,18 @@ const wrapChannel = ({ channel }) => {
     send,
 
     get readyState() {
-        return _readyState;
+      return internalReadyState;
     },
 
     get bufferedAmount() {
-        return channel.bufferedAmount();
+      return channel.bufferedAmount();
     },
 
     addEventListener: emitter.addEventListener,
   };
 };
 
-const convertIceServers = ({ iceServers }) => {
-
-};
+const convertIceServers = ({ iceServers }) => {};
 
 export default function (options) {
   const pc = new datachannel.PeerConnection("pc", {
@@ -74,6 +106,12 @@ export default function (options) {
 
   const emitter = emitterForWeb();
   this.addEventListener = emitter.addEventListener;
+
+  const safeCtx = createSafeContext({
+    error(err) {
+      emitter.emit("error", err);
+    },
+  });
 
   this.setLocalDescription = (desc) => {
     return Promise.resolve().then(() => {
@@ -103,21 +141,21 @@ export default function (options) {
     });
   };
 
-  pc.onLocalCandidate((candidate, mid) => {
+  pc.onLocalCandidate(safeCtx.run((candidate, mid) => {
     emitter.emit("icecandidate", { candidate });
-  });
+  }));
 
-  pc.onGatheringStateChange((state) => {
+  pc.onGatheringStateChange(safeCtx.run((state) => {
     if (state === "complete") {
       emitter.emit("icecandidate", { candidate: null });
     }
-  });
+  }));
 
-  pc.onDataChannel((channel) => {
+  pc.onDataChannel(safeCtx.run((channel) => {
     emitter.emit("datachannel", {
       channel: wrapChannel({ channel }),
     });
-  });
+  }));
 
   Object.defineProperty(this, "localDescription", {
     get() {
