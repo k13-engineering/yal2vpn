@@ -36,7 +36,7 @@ const iceServers = [
 ];
 
 const createRTCPeerConnection = (...args) => {
-  return wrtc.RTCPeerConnection(...args);
+  return new wrtc.RTCPeerConnection(...args);
   // return new RTCPeerConnection(...args);
 };
 
