@@ -28,7 +28,7 @@ const create = ({ logger, bridge, mtu = 1200 }) => {
         //   .then(() => {
         //     logger.log(`interface MTU set to ${mtu}`);
 
-        //     return bridge.connect({ ifindex });
+        return bridge.connect({ ifindex });
         //   });
       })
       .then(() => {
