@@ -15,165 +15,164 @@ const iceServers = [
   // }
   {
     hostname: "5.44.99.99",
-    port: 3478
+    port: 3478,
   },
   {
     hostname: "5.44.99.99",
     port: 3478,
     relayType: "TurnUdp",
     username: "test",
-    password: "abc"
-  }
+    password: "abc",
+  },
 ];
 
 const debug = debugFactory("peer-connection");
 
-const initiate = () => {
-  const emitter = new EventEmitter();
+const create = ({ logger, clientId, peerId, sendToTownhall }) => {
+  const initiate = () => {
+    const emitter = new EventEmitter();
 
-  // const pc = new wrtc.RTCPeerConnection({
-  const pc = new RTCPeerConnection({
-    iceServers,
-  });
-
-  const channel = pc.createDataChannel("vpn", {
-    ordered: false,
-    maxRetransmits: 0,
-  });
-  channel.addEventListener("open", () => {
-    debug("channel opened");
-    emitter.emit("open");
-  });
-  channel.addEventListener("message", (event) => {
-    debug(`received packet with ${event.data.length} bytes`);
-    const data = Buffer.from(event.data);
-    emitter.emit("packet", data);
-  });
-
-  channel.addEventListener("close", () => {
-    emitter.emit("close");
-  });
-
-  pc.addEventListener("icecandidate", (event) => {
-    // console.log("event =", event);
-    if (event.candidate === null) {
-      // console.log("all candidates");
-      let sdp = pc.localDescription.sdp;
-      // console.log("localDescription =", pc.localDescription);
-
-      emitter.emit("offer", { sdp });
-    }
-  });
-
-  pc.createOffer()
-    .then((d) => {
-      pc.setLocalDescription(d);
-    })
-    .catch((ex) => {
-      console.error(ex);
+    // const pc = new wrtc.RTCPeerConnection({
+    const pc = new RTCPeerConnection({
+      iceServers,
     });
 
-  const processAnswer = ({ sdp }) => {
-    pc.setRemoteDescription({ type: "answer", sdp });
-  };
-
-  const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
-
-  const send = ({ packet }) => {
-    if (
-      channel.readyState === "open" &&
-      channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
-    ) {
-      channel.send(packet);
-    } else {
-      console.log("dropping packet");
-    }
-  };
-
-  const close = () => {
-    return pc.close();
-  };
-
-  return {
-    on: emitter.on.bind(emitter),
-    once: emitter.once.bind(emitter),
-
-    processAnswer,
-
-    send,
-
-    close,
-  };
-};
-
-const createFromOffer = ({ sdp }) => {
-  const emitter = new EventEmitter();
-
-  // const pc = new wrtc.RTCPeerConnection({
-  const pc = new RTCPeerConnection({
-    iceServers,
-  });
-  let channel = undefined;
-
-  pc.addEventListener("icecandidate", (event) => {
-    console.log("icecandidate", event);
-
-    if (event.candidate === null) {
-      // console.log("remote ice candidate");
-
-      const sdp = pc.localDescription.sdp;
-
-      emitter.emit("answer", { sdp });
-    }
-  });
-
-  pc.addEventListener("datachannel", (event) => {
-    console.log("ondatachannel", event);
-    // console.log("datachannel name =", event.channel.label);
-
-    event.channel.addEventListener("open", () => {
-      console.log("channel on open in peer connection");
-      channel = event.channel;
+    const channel = pc.createDataChannel("vpn", {
+      ordered: false,
+      maxRetransmits: 0,
+    });
+    channel.addEventListener("open", () => {
+      debug("channel opened");
       emitter.emit("open");
     });
-    event.channel.addEventListener("message", (event) => {
+    channel.addEventListener("message", (event) => {
+      debug(`received packet with ${event.data.length} bytes`);
       const data = Buffer.from(event.data);
       emitter.emit("packet", data);
     });
-    event.channel.addEventListener("close", () => {
+
+    channel.addEventListener("close", () => {
       emitter.emit("close");
     });
-  });
 
-  pc.setRemoteDescription({ type: "offer", sdp })
-    .then(() => {
-      return pc.createAnswer();
-    })
-    .then((answer) => {
-      return pc.setLocalDescription(answer);
+    pc.addEventListener("icecandidate", (event) => {
+      // console.log("event =", event);
+      if (event.candidate === null) {
+        // console.log("all candidates");
+        let sdp = pc.localDescription.sdp;
+        // console.log("localDescription =", pc.localDescription);
+
+        emitter.emit("offer", { sdp });
+      }
     });
 
-  const send = ({ packet }) => {
-    if (channel) {
-      channel.send(packet);
-    }
+    pc.createOffer()
+      .then((d) => {
+        pc.setLocalDescription(d);
+      })
+      .catch((ex) => {
+        console.error(ex);
+      });
+
+    const processAnswer = ({ sdp }) => {
+      pc.setRemoteDescription({ type: "answer", sdp });
+    };
+
+    const MAX_BUFFERED_AMOUNT = 1 * 1024 * 1024;
+
+    const send = ({ packet }) => {
+      if (
+        channel.readyState === "open" &&
+        channel.bufferedAmount + packet.length < MAX_BUFFERED_AMOUNT
+      ) {
+        channel.send(packet);
+      } else {
+        logger.log("dropping packet");
+      }
+    };
+
+    const close = () => {
+      return pc.close();
+    };
+
+    return {
+      on: emitter.on.bind(emitter),
+      once: emitter.once.bind(emitter),
+
+      processAnswer,
+
+      send,
+
+      close,
+    };
   };
 
-  const close = () => {
-    return pc.close();
+  const createFromOffer = ({ sdp }) => {
+    const emitter = new EventEmitter();
+
+    // const pc = new wrtc.RTCPeerConnection({
+    const pc = new RTCPeerConnection({
+      iceServers,
+    });
+    let channel = undefined;
+
+    pc.addEventListener("icecandidate", (event) => {
+      logger.log("icecandidate", event);
+
+      if (event.candidate === null) {
+        // console.log("remote ice candidate");
+
+        const sdp = pc.localDescription.sdp;
+
+        emitter.emit("answer", { sdp });
+      }
+    });
+
+    pc.addEventListener("datachannel", (event) => {
+      event.channel.addEventListener("open", () => {
+        channel = event.channel;
+        emitter.emit("open");
+      });
+      event.channel.addEventListener("message", (event) => {
+        const data = Buffer.from(event.data);
+        emitter.emit("packet", data);
+      });
+      event.channel.addEventListener("close", () => {
+        emitter.emit("close");
+      });
+      event.channel.addEventListener("error", (event) => {
+        logger.log("unhandeled channel error", event);
+      });
+    });
+
+    pc.setRemoteDescription({ type: "offer", sdp })
+      .then(() => {
+        return pc.createAnswer();
+      })
+      .then((answer) => {
+        return pc.setLocalDescription(answer);
+      });
+
+    const send = ({ packet }) => {
+      if (channel) {
+        channel.send(packet);
+      }
+    };
+
+    const close = () => {
+      return pc.close();
+    };
+
+    return {
+      on: emitter.on.bind(emitter),
+      once: emitter.once.bind(emitter),
+
+      send,
+
+      close,
+    };
   };
 
-  return {
-    on: emitter.on.bind(emitter),
-    once: emitter.once.bind(emitter),
-
-    send,
-
-    close,
-  };
-};
-
-const create = ({ logger, clientId, peerId, sendToTownhall }) => {
   const emitter = new EventEmitter();
 
   let connection = undefined;
