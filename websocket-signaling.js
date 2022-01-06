@@ -26,10 +26,6 @@ const create = ({ logger, url }) => {
     maxReconnectionDelay: 60000,
   });
 
-  rws.addEventListener("ping", () => {
-    logger.log("got ping!");
-  });
-
   const expectedPingInterval = 10000;
   const pingTimeout = 3 * expectedPingInterval;
 
@@ -50,7 +46,6 @@ const create = ({ logger, url }) => {
   rws.addEventListener("open", (event) => {
     const ws = event.target;
     ws.on("ping", () => {
-      logger.log("received ping");
       refreshPingTimeout();
     });
     refreshPingTimeout();

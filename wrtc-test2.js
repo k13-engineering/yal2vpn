@@ -150,8 +150,6 @@ bridgeFactory
         return;
       }
 
-      console.log("packet =", packet);
-
       let peerSession = peerSessions[packet.from];
 
       if (!peerSession) {

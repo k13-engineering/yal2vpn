@@ -13,10 +13,11 @@ const iceServers = [
   //   username: "test",
   //   credential: "abc"
   // }
-  {
-    hostname: "5.44.99.99",
-    port: 3478,
-  },
+
+  // {
+  //   hostname: "5.44.99.99",
+  //   port: 3478,
+  // },
   {
     hostname: "5.44.99.99",
     port: 3478,
@@ -24,11 +25,42 @@ const iceServers = [
     username: "test",
     password: "abc",
   },
+
+  // {
+  //   hostname: "turn.bistri.com",
+  //   port: 80,
+  //   relayType: "TurnUdp",
+  //   password: "homeo",
+  //   username: "homeo",
+  // },
 ];
 
 const debug = debugFactory("peer-connection");
 
-const create = ({ logger, clientId, peerId, sendToTownhall }) => {
+const createSublogger = ({ logger, prefix }) => {
+  let result = {};
+  Object.keys(logger).forEach((key) => {
+    result = {
+      ...result,
+      [key]: (...args) => {
+        logger[key](prefix, ...args);
+      },
+    };
+  });
+  return result;
+};
+
+let connectionCounter = 0;
+
+const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
+  const connectionId = connectionCounter;
+  connectionCounter += 1;
+
+  const logger = createSublogger({
+    logger: peerLogger,
+    prefix: `[ conn #${connectionId} ]`,
+  });
+
   const initiate = () => {
     const emitter = new EventEmitter();
 
@@ -58,13 +90,14 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
     });
 
     pc.addEventListener("icecandidate", (event) => {
-      // console.log("event =", event);
       if (event.candidate === null) {
         // console.log("all candidates");
         let sdp = pc.localDescription.sdp;
         // console.log("localDescription =", pc.localDescription);
 
         emitter.emit("offer", { sdp });
+      } else {
+        logger.log("icecandidate", event.candidate);
       }
     });
 
@@ -121,14 +154,14 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
     let channel = undefined;
 
     pc.addEventListener("icecandidate", (event) => {
-      logger.log("icecandidate", event);
-
       if (event.candidate === null) {
         // console.log("remote ice candidate");
 
         const sdp = pc.localDescription.sdp;
 
         emitter.emit("answer", { sdp });
+      } else {
+        logger.log("icecandidate", event.candidate);
       }
     });
 
@@ -142,6 +175,7 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
         emitter.emit("packet", data);
       });
       event.channel.addEventListener("close", () => {
+        logger.log("datachannel closed");
         emitter.emit("close");
       });
       event.channel.addEventListener("error", (event) => {
@@ -155,7 +189,8 @@ const create = ({ logger, clientId, peerId, sendToTownhall }) => {
       })
       .then((answer) => {
         return pc.setLocalDescription(answer);
-      }).catch((err) => {
+      })
+      .catch((err) => {
         emitter.emit("error", err);
       });
 
