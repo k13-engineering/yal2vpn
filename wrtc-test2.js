@@ -144,6 +144,10 @@ bridgeFactory
         return;
       }
 
+      if (packet.to !== undefined && packet.to !== clientId) {
+        return;
+      }
+
       console.log("packet =", packet);
 
       let peerSession = peerSessions[packet.from];
