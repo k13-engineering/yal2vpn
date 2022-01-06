@@ -1,4 +1,4 @@
-import tuntap2 from "../node-tuntap2/lib/index.js";
+import tuntap2 from "node-tuntap2";
 import EventEmitter from "events";
 import rtnetlink from "node-rtnetlink";
 
