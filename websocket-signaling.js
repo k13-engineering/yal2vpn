@@ -43,7 +43,7 @@ const create = ({ logger, url }) => {
       pingTimeoutHandle = undefined;
 
       logger.log("ping timeout, reconnecting...");
-      rws.refresh();
+      rws.reconnect();
     }, pingTimeout);
   };
 
