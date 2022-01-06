@@ -56,7 +56,12 @@ const create = ({
   });
   connection.on("packet", (msg) => {
     // console.log("received packet!", msg);
-    virtualPort.send({ packet: msg });
+    try {
+      virtualPort.send({ packet: msg });
+    } catch (ex) {
+      peerLogger.error("error sending packet to virtual port", ex);
+      emitter.emit("dead");
+    }
   });
 
   const close = () => {
