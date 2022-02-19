@@ -53,6 +53,16 @@ const sendToTrack = ({ track, payload }) => {
     return;
   }
 
+  let sequenceNumber;
+
+  if (track.sequenceNumber === undefined) {
+    sequenceNumber = 1;
+  } else {
+    sequenceNumber = track.sequenceNumber;
+  }
+
+  track.sequenceNumber = sequenceNumber + 1;
+
   const packetToSend = rtpPacket.format({
     packet: {
       version: 2,
@@ -60,7 +70,7 @@ const sendToTrack = ({ track, payload }) => {
       extensions: 0,
       marker: 0,
       payloadType: 96,
-      sequenceNumber: 1,
+      sequenceNumber,
       timestamp: 1,
       ssrc: 4,
       csrc: [],
