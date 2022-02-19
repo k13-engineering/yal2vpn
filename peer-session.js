@@ -1,4 +1,4 @@
-import peerConnectionFactory from "./peer-connection.js";
+import peerConnectionFactory from "./peer-connection-rtp.js";
 import virtualPortFactory from "./virtual-port.js";
 import EventEmitter from "events";
 
