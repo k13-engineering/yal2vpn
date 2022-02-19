@@ -49,6 +49,10 @@ const createPeerConnectionWithTrack = () => {
 };
 
 const sendToTrack = ({ track, payload }) => {
+  if (!track.isOpen()) {
+    return;
+  }
+  
   const packetToSend = rtpPacket.format({
     packet: {
       version: 2,
