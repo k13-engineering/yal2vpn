@@ -61,7 +61,7 @@ const sendToTrack = ({ track, payload }) => {
     sequenceNumber = track.sequenceNumber;
   }
 
-  track.sequenceNumber = sequenceNumber + 1;
+  track.sequenceNumber = (sequenceNumber + 1) % 65536;
 
   const packetToSend = rtpPacket.format({
     packet: {
