@@ -55,7 +55,7 @@ const create = ({
     emitter.emit("dead");
   });
   connection.on("packet", (msg) => {
-    console.log("received packet!", msg);
+    // console.log("received packet!", msg);
     try {
       virtualPort.send({ packet: msg });
     } catch (ex) {
