@@ -52,7 +52,7 @@ const sendToTrack = ({ track, payload }) => {
   if (!track.isOpen()) {
     return;
   }
-  
+
   const packetToSend = rtpPacket.format({
     packet: {
       version: 2,
@@ -109,7 +109,7 @@ const initiate = () => {
 
   track.onMessage((msg) => {
     const packet = rtpPacket.parse({ buffer: msg });
-    emitter.emit("packet", packet);
+    emitter.emit("packet", packet.payload);
   });
 
   const processAnswer = ({ sdp }) => {
@@ -164,7 +164,7 @@ const createFromOffer = ({ sdp }) => {
 
   track.onMessage((msg) => {
     const packet = rtpPacket.parse({ buffer: msg });
-    emitter.emit("packet", packet);
+    emitter.emit("packet", packet.payload);
   });
 
   return {
