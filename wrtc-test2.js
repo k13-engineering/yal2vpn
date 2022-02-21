@@ -67,48 +67,63 @@ Object.keys(config.publicKeyFiles).forEach((name) => {
 const clientId = v4();
 logger.log(`using client id ${clientId}`);
 
+const registerCleanupHooks = ({ bridge, cleanup }) => {
+  let cleanupInProgress = false;
+
+  const cleanupAtExit = () => {
+    if (cleanupInProgress) {
+      return;
+    }
+
+    cleanupInProgress = true;
+    
+    cleanup();
+
+    Promise.resolve()
+      .then(() => {
+        // logger.log("removing bridge");
+        // return bridge.deleteLink();
+      })
+      .then(() => {
+        console.log("calling process exit");
+        process.exit(0);
+      })
+      .catch((err) => {
+        console.error("failed to remove bridge", err);
+        process.exit(-1);
+      });
+  };
+
+  process.on("SIGINT", cleanupAtExit);
+  process.on("SIGTERM", cleanupAtExit);
+  process.on("uncaughtException", (err) => {
+    console.error("uncauhgtException", err);
+    cleanupAtExit();
+  });
+  process.on("unhandledRejection", (err) => {
+    console.error("unhandledRejection", err);
+    cleanupAtExit();
+  });
+};
+
+logger.log(`creating or hijacking bridge ${config.bridgeName}`);
 bridgeFactory
   .createOrHijack({ bridgeName: config.bridgeName })
   .then((bridge) => {
+    logger.log(`bridge ${config.bridgeName} ready`);
+
     let peerSessions = {};
-    let cleanupInProgress = false;
 
-    const cleanupAtExit = () => {
-      if (cleanupInProgress) {
-        return;
-      }
-
-      cleanupInProgress = true;
-
-      Object.keys(peerSessions).forEach((key) => {
-        peerSessions[key].close();
-      });
-
-      Promise.resolve()
-        .then(() => {
-          // logger.log("removing bridge");
-          // return bridge.deleteLink();
-        })
-        .then(() => {
-          console.log("calling process exit");
-          process.exit(0);
-        })
-        .catch((err) => {
-          console.error("failed to remove bridge", err);
-          process.exit(-1);
+    registerCleanupHooks({
+      bridge,
+      cleanup: () => {
+        Object.keys(peerSessions).forEach((key) => {
+          peerSessions[key].close();
         });
-    };
+      },
+    });
 
-    process.on("SIGINT", cleanupAtExit);
-    process.on("SIGTERM", cleanupAtExit);
-    process.on("uncaughtException", (err) => {
-      console.error("uncauhgtException", err);
-      cleanupAtExit();
-    });
-    process.on("unhandledRejection", (err) => {
-      console.error("unhandledRejection", err);
-      cleanupAtExit();
-    });
+    logger.log(`trying to connect to signaling server`);
 
     const townhall = websocketSignaling.create({
       logger,
@@ -130,6 +145,7 @@ bridgeFactory
     };
 
     secureTownhall.on("connected", () => {
+      logger.log("connected to signaling server");
       sendHello();
     });
 
