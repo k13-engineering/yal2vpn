@@ -6,7 +6,7 @@ const createOrHijack = ({ bridgeName }) => {
       .tryFindOneBy({ name: bridgeName })
       .then((existingInterface) => {
         if (existingInterface) {
-          console.warn(`using existing bridge ${bridgeName}`);
+          // console.warn(`using existing bridge ${bridgeName}`);
           return existingInterface;
         } else {
           return rt.link

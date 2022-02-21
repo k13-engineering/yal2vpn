@@ -99,15 +99,15 @@ const createConnection = () => {
   const { pc, track } = createPeerConnectionWithTrack();
 
   const sendHeartbeat = () => {
-    sendToTrack({ track, payload: Buffer.alloc(1), ssrc: 5 });
+    const packetHeartbeat = Buffer.alloc(1);
+    packetHeartbeat.writeUInt8(0);
+    sendToTrack({ track, payload: packetHeartbeat, ssrc: 5 });
   };
 
   const heartbeatHandler = heartbeatHandlerFactory.create({
     sendHeartbeat,
   });
   heartbeatHandler.on("timeout", () => {
-    console.error("heartbeat timeout!");
-
     pc.close();
     heartbeatHandler.close();
 
@@ -116,12 +116,10 @@ const createConnection = () => {
 
   pc.onGatheringStateChange(
     noExceptions((state) => {
-      console.log("gathering state =", state);
-
       if (state === "complete") {
         const desc = pc.localDescription();
 
-        console.log("offer/answer =", desc);
+        // console.log("offer/answer =", desc);
 
         // "offer" or "answer"
         emitter.emit(desc.type, desc);
@@ -131,8 +129,6 @@ const createConnection = () => {
 
   pc.onStateChange(
     noExceptions((state) => {
-      console.log("state =", state);
-
       if (state === "connected") {
         emitter.emit("open");
       }
@@ -145,7 +141,7 @@ const createConnection = () => {
     if (packet.ssrc === 4) {
       emitter.emit("packet", packet.payload);
     } else {
-      console.log("heartbeat received");
+      // console.log("heartbeat received");
     }
 
     heartbeatHandler.receivedPacket();
@@ -220,6 +216,9 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
     connection.on("open", () => {
       // console.log("peer connection open!");
       emitter.emit("connected");
+    });
+    connection.on("error", (err) => {
+      emitter.emit("error", err);
     });
     connection.on("close", () => {
       emitter.emit("disconnected");

@@ -50,7 +50,7 @@ const create = ({
     // console.log("discconnected!");
   });
   connection.on("error", (err) => {
-    peerLogger.log("peer-to-peer error", err);
+    peerLogger.log("peer-to-peer error:", err.message || err);
     connection.close();
     emitter.emit("dead");
   });
