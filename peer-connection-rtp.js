@@ -1,6 +1,7 @@
 import EventEmitter from "events";
 import datachannel from "node-datachannel";
 import rtpPacket from "./lib/rtp-packet.js";
+import heartbeatHandlerFactory from "./lib/heartbeat.js";
 
 // datachannel.initLogger("Debug");
 
@@ -97,6 +98,22 @@ const createConnection = () => {
   const emitter = new EventEmitter();
   const { pc, track } = createPeerConnectionWithTrack();
 
+  const sendHeartbeat = () => {
+    sendToTrack({ track, payload: Buffer.alloc(1), ssrc: 5 });
+  };
+
+  const heartbeatHandler = heartbeatHandlerFactory.create({
+    sendHeartbeat,
+  });
+  heartbeatHandler.on("timeout", () => {
+    console.error("heartbeat timeout!");
+
+    pc.close();
+    heartbeatHandler.close();
+
+    emitter.emit("error", Error(`connection timed out`));
+  });
+
   pc.onGatheringStateChange(
     noExceptions((state) => {
       console.log("gathering state =", state);
@@ -122,14 +139,6 @@ const createConnection = () => {
     })
   );
 
-  let packetReceived = false;
-  const heartbeatReceiveInterval = setInterval(() => {
-    if (!packetReceived) {
-      console.error("heartbeat timeout");
-    }
-    packetReceived = false;
-  }, 10000);
-
   track.onMessage((msg) => {
     const packet = rtpPacket.parse({ buffer: msg });
 
@@ -139,7 +148,7 @@ const createConnection = () => {
       console.log("heartbeat received");
     }
 
-    packetReceived = true;
+    heartbeatHandler.receivedPacket();
   });
 
   const createOffer = () => {
@@ -150,23 +159,13 @@ const createConnection = () => {
     pc.setRemoteDescription(sdp, type);
   };
 
-  let packetsSent = false;
-
-  const heartbeatInterval = setInterval(() => {
-    if (!packetsSent) {
-      sendToTrack({ track, payload: Buffer.alloc(1), ssrc: 5 });
-    }
-    packetsSent = false;
-  }, 2000);
-
   const send = ({ packet: payload }) => {
-    packetsSent = true;
     sendToTrack({ track, payload, ssrc: 4 });
+    heartbeatHandler.sentPacket();
   };
 
   const close = () => {
-    clearInterval(heartbeatInterval);
-    clearInterval(heartbeatReceiveInterval);
+    heartbeatHandler.close();
     pc.close();
   };
 
@@ -178,7 +177,7 @@ const createConnection = () => {
     processOfferOrAnswer,
 
     send,
-    
+
     close,
   };
 };
@@ -253,7 +252,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
     initConnection();
     connection.processOfferOrAnswer({
       type: "offer",
-      sdp: packet.sdp
+      sdp: packet.sdp,
     });
   };
 
@@ -265,7 +264,7 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
     logger.log(`received SDP answer`);
     connection.processOfferOrAnswer({
       type: "answer",
-      sdp: packet.sdp
+      sdp: packet.sdp,
     });
   };
 
