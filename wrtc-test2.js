@@ -221,6 +221,8 @@ bridgeFactory
         };
       }
     });
+  }).catch((err) => {
+    logger.error(err);
   });
 
 // const publicKeys = {
