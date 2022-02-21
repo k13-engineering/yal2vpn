@@ -1,0 +1,15 @@
+name: Release build
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker/setup-qemu-action@v1
+      - name: Build executable
+        run: docker build -f Dockerfile.nexe .
