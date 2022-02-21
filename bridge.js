@@ -43,6 +43,10 @@ const createOrHijack = ({ bridgeName }) => {
               deleteLink: bridgeLink.deleteLink
             };
           });
+      }).catch((err) => {
+        rt.close();
+
+        throw err;
       });
   });
 };
