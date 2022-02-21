@@ -33,7 +33,15 @@ let connectionCounter = 0;
 
 const createPeerConnectionWithTrack = () => {
   const pc = new datachannel.PeerConnection("pc", {
-    iceServers: [],
+    iceServers: [
+      {
+        hostname: "5.44.99.99",
+        port: 3478,
+        relayType: "TurnUdp",
+        username: "test",
+        password: "abc",
+      },
+    ],
   });
 
   const video1 = new datachannel.Video("video", "SendRecv");
