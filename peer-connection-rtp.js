@@ -2,6 +2,8 @@ import EventEmitter from "events";
 import datachannel from "node-datachannel";
 import rtpPacket from "./lib/rtp-packet.js";
 
+// datachannel.initLogger("Debug");
+
 // callback are called from C++ code
 // raising an exception in the callbacks
 // causes a process abort, so we make sure
@@ -48,6 +50,7 @@ const createPeerConnectionWithTrack = () => {
   video1.addH264Codec(96);
   video1.setBitrate(3000);
   video1.addSSRC(4);
+  video1.addSSRC(5);
   const track = pc.addTrack(video1);
 
   return {
@@ -90,7 +93,7 @@ const sendToTrack = ({ track, payload }) => {
   track.sendMessageBinary(packetToSend);
 };
 
-const initiate = () => {
+const createConnection = () => {
   const emitter = new EventEmitter();
   const { pc, track } = createPeerConnectionWithTrack();
 
@@ -104,20 +107,22 @@ const initiate = () => {
 
   pc.onGatheringStateChange(
     noExceptions((state) => {
+      console.log("gathering state =", state);
+
       if (state === "complete") {
         const desc = pc.localDescription();
 
-        console.log("offer =", desc);
+        console.log("offer/answer =", desc);
 
-        emitter.emit("offer", desc);
+        // "offer" or "answer"
+        emitter.emit(desc.type, desc);
       }
     })
   );
-  pc.setLocalDescription();
 
   pc.onStateChange(
     noExceptions((state) => {
-      console.log("state1 =", state);
+      console.log("state =", state);
 
       if (state === "connected") {
         emitter.emit("open");
@@ -130,66 +135,23 @@ const initiate = () => {
     emitter.emit("packet", packet.payload);
   });
 
-  const processAnswer = ({ sdp }) => {
-    pc.setRemoteDescription(sdp, "answer");
+  const createOffer = () => {
+    pc.setLocalDescription();
+  };
+
+  const processOfferOrAnswer = ({ type, sdp }) => {
+    pc.setRemoteDescription(sdp, type);
   };
 
   return {
     on: emitter.on.bind(emitter),
     once: emitter.once.bind(emitter),
 
-    processAnswer,
+    createOffer,
+    processOfferOrAnswer,
+
     send,
     
-    close,
-  };
-};
-
-const createFromOffer = ({ sdp }) => {
-  const emitter = new EventEmitter();
-  const { pc, track } = createPeerConnectionWithTrack();
-
-  const send = ({ packet: payload }) => {
-    sendToTrack({ track, payload });
-  };
-
-  const close = () => {
-    pc.close();
-  };
-
-  pc.onGatheringStateChange(
-    noExceptions((state) => {
-      if (state === "complete") {
-        const desc = pc.localDescription();
-
-        console.log("offer =", desc);
-
-        emitter.emit("answer", desc);
-      }
-    })
-  );
-  pc.setRemoteDescription(sdp, "offer");
-
-  pc.onStateChange(
-    noExceptions((state) => {
-      console.log("state1 =", state);
-
-      if (state === "connected") {
-        emitter.emit("open");
-      }
-    })
-  );
-
-  track.onMessage((msg) => {
-    const packet = rtpPacket.parse({ buffer: msg });
-    emitter.emit("packet", packet.payload);
-  });
-
-  return {
-    on: emitter.on.bind(emitter),
-    once: emitter.once.bind(emitter),
-
-    send,
     close,
   };
 };
@@ -206,41 +168,18 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
   const emitter = new EventEmitter();
   let connection = undefined;
 
-  const processHello = ({ packet }) => {
-    logger.log(`received hello from peer ${peerId}`);
+  const initConnection = () => {
+    connection.on("offer", ({ sdp }) => {
+      const packet = {
+        type: "offer",
+        from: clientId,
+        to: peerId,
+        sdp,
+      };
 
-    if (!connection) {
-      connection = initiate();
-      connection.on("offer", ({ sdp }) => {
-        const packet = {
-          type: "offer",
-          from: clientId,
-          to: peerId,
-          sdp,
-        };
-
-        logger.log("sending SDP offer");
-        sendToTownhall({ packet });
-      });
-      connection.on("open", () => {
-        // console.log("peer connection open!");
-        emitter.emit("connected");
-      });
-      connection.on("close", () => {
-        emitter.emit("disconnected");
-      });
-      connection.on("packet", (msg) => {
-        emitter.emit("packet", msg);
-      });
-    }
-  };
-
-  const processOffer = ({ packet }) => {
-    logger.log(`received SDP offer from peer ${peerId}`);
-    // console.log(`offer from peer ${peerId}`);
-    // console.log("got offer");
-
-    connection = createFromOffer({ sdp: packet.sdp });
+      logger.log("sending SDP offer");
+      sendToTownhall({ packet });
+    });
     connection.on("answer", ({ sdp }) => {
       const packet = {
         type: "answer",
@@ -264,9 +203,43 @@ const create = ({ logger: peerLogger, clientId, peerId, sendToTownhall }) => {
     });
   };
 
+  const processHello = ({ packet }) => {
+    logger.log(`received hello from peer ${peerId}`);
+
+    if (!connection) {
+      connection = createConnection();
+      initConnection();
+      connection.createOffer();
+    }
+  };
+
+  const processOffer = ({ packet }) => {
+    logger.log(`received SDP offer from peer ${peerId}`);
+    // console.log(`offer from peer ${peerId}`);
+    // console.log("got offer");
+
+    if (connection) {
+      throw Error("received offer while connected");
+    }
+
+    connection = createConnection();
+    initConnection();
+    connection.processOfferOrAnswer({
+      type: "offer",
+      sdp: packet.sdp
+    });
+  };
+
   const processAnswer = ({ packet }) => {
+    if (!connection) {
+      throw Error("received answer without open offer");
+    }
+
     logger.log(`received SDP answer`);
-    connection.processAnswer({ sdp: packet.sdp });
+    connection.processOfferOrAnswer({
+      type: "answer",
+      sdp: packet.sdp
+    });
   };
 
   const handlers = {
