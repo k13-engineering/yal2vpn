@@ -59,7 +59,7 @@ const createPeerConnectionWithTrack = () => {
   };
 };
 
-const sendToTrack = ({ track, payload }) => {
+const sendToTrack = ({ track, payload, ssrc }) => {
   if (!track.isOpen()) {
     return;
   }
@@ -83,7 +83,7 @@ const sendToTrack = ({ track, payload }) => {
       payloadType: 96,
       sequenceNumber,
       timestamp: 1,
-      ssrc: 4,
+      ssrc,
       csrc: [],
       extension: null,
       payload,
@@ -96,14 +96,6 @@ const sendToTrack = ({ track, payload }) => {
 const createConnection = () => {
   const emitter = new EventEmitter();
   const { pc, track } = createPeerConnectionWithTrack();
-
-  const send = ({ packet: payload }) => {
-    sendToTrack({ track, payload });
-  };
-
-  const close = () => {
-    pc.close();
-  };
 
   pc.onGatheringStateChange(
     noExceptions((state) => {
@@ -130,9 +122,24 @@ const createConnection = () => {
     })
   );
 
+  let packetReceived = false;
+  const heartbeatReceiveInterval = setInterval(() => {
+    if (!packetReceived) {
+      console.error("heartbeat timeout");
+    }
+    packetReceived = false;
+  }, 10000);
+
   track.onMessage((msg) => {
     const packet = rtpPacket.parse({ buffer: msg });
-    emitter.emit("packet", packet.payload);
+
+    if (packet.ssrc === 4) {
+      emitter.emit("packet", packet.payload);
+    } else {
+      console.log("heartbeat received");
+    }
+
+    packetReceived = true;
   });
 
   const createOffer = () => {
@@ -141,6 +148,26 @@ const createConnection = () => {
 
   const processOfferOrAnswer = ({ type, sdp }) => {
     pc.setRemoteDescription(sdp, type);
+  };
+
+  let packetsSent = false;
+
+  const heartbeatInterval = setInterval(() => {
+    if (!packetsSent) {
+      sendToTrack({ track, payload: Buffer.alloc(1), ssrc: 5 });
+    }
+    packetsSent = false;
+  }, 2000);
+
+  const send = ({ packet: payload }) => {
+    packetsSent = true;
+    sendToTrack({ track, payload, ssrc: 4 });
+  };
+
+  const close = () => {
+    clearInterval(heartbeatInterval);
+    clearInterval(heartbeatReceiveInterval);
+    pc.close();
   };
 
   return {
