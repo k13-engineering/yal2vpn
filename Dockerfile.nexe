@@ -11,7 +11,7 @@ RUN npm install
 
 COPY --chown=node . /home/node/app/
 
-RUN node_modules/.bin/nexe --build --configure="--fully-static" --make="-j$(nproc)" -i wrtc2-test.js -o yal2vpn
+RUN node_modules/.bin/nexe --build --configure="--partly-static" --make="-j$(nproc)" -i wrtc2-test.js -o yal2vpn
 
 USER root
 
