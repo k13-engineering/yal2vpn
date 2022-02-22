@@ -13,8 +13,8 @@ jobs:
       - uses: docker/setup-qemu-action@v1
       - name: Build executable
         run: |
-          docker build -f Dockerfile.nexe .
-          docker run --rm beamcoder-build-x86_64 cat /root/beamcoder/build/Release/beamcoder.node > yal2vpn
+          docker build -f Dockerfile.nexe . -t yal2vpn-build
+          docker run --rm yal2vpn-build cat yal2vpn > yal2vpn
       
       - name: Create Release
         id: create_release
