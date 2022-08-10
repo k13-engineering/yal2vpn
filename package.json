@@ -33,7 +33,6 @@
     "node-datachannel": "^0.3.4",
     "node-rsa": "^1.1.1",
     "node-tuntap2": "git://github.com/k13-engineering/node-tuntap2.git#dev",
-    "reconnecting-websocket": "^4.4.0",
     "uuid": "^8.3.2",
     "wrtc": "^0.4.7",
     "ws": "^8.3.0",
